@@ -1,18 +1,9 @@
-# Salesforce DX Project: Next Steps
+# Salesforce Logging Utility
 
-Now that you’ve created a Salesforce DX project, what’s next? Here are some documentation resources to get you started.
+This utility is based on salesforce platform events for providing an efficient alternative to logging by using System.debug method.
 
-## How Do You Plan to Deploy Your Changes?
+## How to use/configure
 
-Do you want to deploy a set of changes, or create a self-contained application? Choose a [development model](https://developer.salesforce.com/tools/vscode/en/user-guide/development-models).
+Once installed, you can start using it by setting up "Log Setting" custom metadata type records. Set the MasterLabel of record to same as the class API name. This is case sensitive so make sure it matches exactly with the class API name.
 
-## Configure Your Salesforce DX Project
-
-The `sfdx-project.json` file contains useful configuration information for your project. See [Salesforce DX Project Configuration](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm) in the _Salesforce DX Developer Guide_ for details about this file.
-
-## Read All About It
-
-- [Salesforce Extensions Documentation](https://developer.salesforce.com/tools/vscode/)
-- [Salesforce CLI Setup Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_intro.htm)
-- [Salesforce DX Developer Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_intro.htm)
-- [Salesforce CLI Command Reference](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_reference.meta/sfdx_cli_reference/cli_reference.htm)
+Start using it by replacing any System.debug with QDX_Log.debug method. If you need to persist error in database, you can call the QDX_Log.error method. For this to work, you will also need to configure a metadata type record where QDX_ErrorClassName is set to the class API name where QDX_Log.IError interface is implemented.
