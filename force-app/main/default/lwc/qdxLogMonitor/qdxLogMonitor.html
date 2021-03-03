@@ -1,0 +1,28 @@
+<template>
+    <lightning-card >
+        <div class="container">
+            <template if:true={displayFilterOptions}>
+                <lightning-combobox 
+                    name="UserNameFilter"
+                    label="Filter By User"
+                    options={filterOptions}
+                    value={selectedUser}
+                    onchange={handleFilterChange}>
+                </lightning-combobox>
+                <br/>
+            </template>
+            <template if:true={gridData.length}>
+                <lightning-tree-grid
+                    columns={gridColumns}
+                    data={gridData}
+                    key-field="QDX_Context__c"
+                    hide-checkbox-column="true">
+                </lightning-tree-grid>
+            </template>
+            <template if:false={gridData.length}>
+                <p>Waiting for log events...</p>
+                <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+            </template>
+        </div>
+    </lightning-card>
+</template>
