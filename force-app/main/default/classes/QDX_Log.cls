@@ -30,6 +30,14 @@ public with sharing class QDX_Log {
 		debug('', new List<Object>(), contextId);
 	}
 
+    public static void debug(Object obj) {
+        debug('' + obj, new List<Object>(), null);
+    }
+
+    public static void debug(Object[] objList) {
+        debug('' + objList, new List<Object>(), null);
+    }
+
 	public static void debug(String message, List<Object> values, Id contextId) {
 		emit(message, values, contextId, LoggingLevel.DEBUG);
 	}
@@ -50,6 +58,14 @@ public with sharing class QDX_Log {
 		error('', new List<Object>(), contextId);
 	}
 
+    public static void error(Object obj) {
+        error('' + obj, new List<Object>(), null);
+    }
+
+    public static void error(Object[] objList) {
+        error('' + objList, new List<Object>(), null);
+    }
+
 	public static void error(String message, List<Object> values, Id contextId) {
 		emit(message, values, contextId, LoggingLevel.ERROR);
 	}
@@ -63,21 +79,23 @@ public with sharing class QDX_Log {
     }
 
     public static void publish() {
+        QDX_Log__e[] errorEvents = new List<QDX_Log__e>();
+
+        for (QDX_Log__e errorEvent : eventsToPublish) {
+            if (currentEvent.QDX_Level__c == LoggingLevel.ERROR.name()) errorEvents.add(errorEvent);
+        }
+
         if(eventsToPublish != null && eventsToPublish.size() > 0) {
             limits();
             EventBus.publish(eventsToPublish);
             eventsToPublish.clear();
         } 
+
+        createError(errorEvents);
     }
 
     public interface IError {
-        void create(
-            String className, 
-            String methodName, 
-            Decimal lineNumber, 
-            Id userId,
-            String message
-        );
+        void create(QDX_Log__e[] errorEvents);
     }
 
     // PRIVATE
@@ -130,9 +148,6 @@ public with sharing class QDX_Log {
 
         populateLocation(currentEvent);
 
-        // If error, we will log using provided class/method that implements IError interface.
-        createError();
-
         // MasterLabel must be same as the class name.
         List<QDX_LogSetting__mdt> classConfigList = [
             SELECT MasterLabel
@@ -150,7 +165,14 @@ public with sharing class QDX_Log {
             (classConfig.QDX_Method__c != null && classConfig.QDX_Method__c != currentEvent.QDX_Method__c) ||
             Limits.getPublishImmediateDML() > Limits.getLimitPublishImmediateDML() - 1
         ) {
-            System.debug(JSON.serializePretty(currentEvent));
+            String debugFormat = 'QDX_LOG_MESSAGE From {0}.{1} at line {2}:\n{3}';
+            Object[] messageParams = new Object[]{
+                currentEvent.QDX_Class__c,
+                currentEvent.QDX_Method__c,
+                currentEvent.QDX_Line__c,
+                currentEvent.QDX_Message__c
+            };
+            System.debug(String.format(debugFormat, messageParams));
             return;
         }
         
@@ -163,8 +185,7 @@ public with sharing class QDX_Log {
         }
 	}
 
-    private static void createError() {
-        if (currentEvent.QDX_Level__c != LoggingLevel.ERROR.name()) return;
+    private static void createError(QDX_Log__e[] errorEvents) {
         if (Limits.getDmlStatements() > Limits.getLimitDmlStatements() - 1) return;
         
         List<QDX_LogSetting__mdt> errorClassSettings = [
@@ -182,13 +203,7 @@ public with sharing class QDX_Log {
         
         try {
             IError errorClass = (IError)t.newInstance(); 
-            errorClass.create(
-                currentEvent.QDX_Class__c,
-                currentEvent.QDX_Method__c,
-                currentEvent.QDX_Line__c,
-                currentEvent.QDX_User__c,
-                currentEvent.QDX_Message__c
-            );
+            errorClass.create(errorEvents);
         } catch(Exception e) {
             System.debug(e.getMessage());
         }
@@ -204,7 +219,7 @@ public with sharing class QDX_Log {
 		return result;
 	}
 
-	public static String timestamp() {
+	private static String timestamp() {
 		return System.now().formatGmt('HH:mm:ss.SSS');
 	}
 
