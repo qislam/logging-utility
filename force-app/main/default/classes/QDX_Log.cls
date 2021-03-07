@@ -79,19 +79,19 @@ public with sharing class QDX_Log {
     }
 
     public static void publish() {
+        if (eventsToPublish == null) return;
+
         QDX_Log__e[] errorEvents = new List<QDX_Log__e>();
 
         for (QDX_Log__e errorEvent : eventsToPublish) {
             if (currentEvent.QDX_Level__c == LoggingLevel.ERROR.name()) errorEvents.add(errorEvent);
         }
 
-        if(eventsToPublish != null && eventsToPublish.size() > 0) {
-            limits();
-            EventBus.publish(eventsToPublish);
-            eventsToPublish.clear();
-        } 
+        limits();
+        EventBus.publish(eventsToPublish);
+        eventsToPublish.clear();
 
-        createError(errorEvents);
+        if (!errorEvents.isEmpty()) createError(errorEvents);
     }
 
     public interface IError {
@@ -176,13 +176,10 @@ public with sharing class QDX_Log {
             return;
         }
         
-        if (classConfig.QDX_Aggregate__c) {
-            if (eventsToPublish == null) eventsToPublish = new List<QDX_Log__e>{currentEvent};
-            else eventsToPublish.add(currentEvent);
-        }
-        if (!classConfig.QDX_Aggregate__c) {
-            EventBus.publish(currentEvent);
-        }
+        if (eventsToPublish == null) eventsToPublish = new List<QDX_Log__e>{currentEvent};
+        else eventsToPublish.add(currentEvent);
+
+        if (!classConfig.QDX_Aggregate__c) EventBus.publish(currentEvent);
 	}
 
     private static void createError(QDX_Log__e[] errorEvents) {
