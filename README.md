@@ -12,7 +12,32 @@ To get log events for a class, start by setting up "Log Setting" custom metadata
 
 ![Log Settings](assets/setting.gif)
 
-Within your classes, you can replace any System.debug statements with QDX_Log.debug method. If you need to persist error in database, you can call the QDX_Log.error method. For this to work, you will also need to configure a metadata type record where QDX_ErrorClassName is set to the class API name where QDX_Log.IError interface is implemented.
+Within your classes, you can replace any System.debug statements with __QDX_Log.debug__ method. If you need to persist error in database, you can call the __QDX_Log.error__ method. For this to work, you will also need to configure a metadata type record where QDX_ErrorClassName is set to the class API name where __QDX_Log.IError__ interface is implemented.
+
+- There is no instantiation of anything required. Simply use __QDX_Log.debug__ same as you would have done with __System.debug__.
+- If you have setup the metadata type record to aggregate, you must use __QDX_Log.publish()__ towards the end of a transaction.
+  - You can publish as many times as you need; just keep in mind that there is limit of 150.
+  - Consider further specifying a method if you are not aggregating events.
+- To implement __QDX_Log.IError__ interface, simply create a method with signature **void create(List<QDX_Log__e> errorEvents)**
+- Remember that you will only see events for which a Log Setting metadata type record is configured.
+
+```java
+//Before
+Account acc = [SELECT Id, Name FROM Account WHERE Id = '0010006354Tyyhe'];
+System.debug('----> Account record: ' + acc);
+
+//After
+Account acc = [SELECT Id, Name FROM Account WHERE Id = '0010006354Tyyhe'];
+QDX_Log.debug('Account record: ' + acc);
+
+// You can also pass a list of sObjects (or any other type) to be logged
+QDX_Log.debug(accountList);
+QDX_Log.debug(contactList);
+
+//We can also pass a format string and values
+QDX_Log.debug('Viewing {0} account with {1} contacts', new List<Object>{acc.Name, contactList.size()};
+
+```
 
 ![Log Statements](assets/class-debug.gif)
 
