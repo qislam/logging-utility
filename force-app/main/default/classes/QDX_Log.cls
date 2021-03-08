@@ -34,8 +34,16 @@ public with sharing class QDX_Log {
         debug('' + obj, new List<Object>(), null);
     }
 
+    public static void debug(Object obj, Id contextId) {
+        debug('' + obj, new List<Object>(), contextId);
+    }
+
     public static void debug(Object[] objList) {
         debug('' + objList, new List<Object>(), null);
+    }
+
+    public static void debug(Object[] objList, Id contextId) {
+        debug('' + objList, new List<Object>(), contextId);
     }
 
 	public static void debug(String message, List<Object> values, Id contextId) {
@@ -62,8 +70,16 @@ public with sharing class QDX_Log {
         error('' + obj, new List<Object>(), null);
     }
 
+    public static void error(Object obj, Id contextId) {
+        error('' + obj, new List<Object>(), contextId);
+    }
+
     public static void error(Object[] objList) {
         error('' + objList, new List<Object>(), null);
+    }
+
+    public static void error(Object[] objList, Id contextId) {
+        error('' + objList, new List<Object>(), contextId);
     }
 
 	public static void error(String message, List<Object> values, Id contextId) {

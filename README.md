@@ -41,4 +41,18 @@ QDX_Log.debug('Viewing {0} account with {1} contacts', new List<Object>{acc.Name
 
 ![Log Statements](assets/class-debug.gif)
 
+## Additional Info
+
+- This utility exposes following methods;
+  - QDX_Log.debug
+  - QDX_Log.error
+  - QDX_Log.limits
+  - QDX_Log.publish
+- The limits and publish methods don't take any parameters.
+- The debug/error methods can take following parameters;
+  - First parameter can be a string, an object or list of objects
+  - Optionally you can pass an id as the second parameter. By default, the utility will group events by the event timestamp. If an Id parameter is passed then that is used for grouping.
+
 Enjoy!
+
+This utility is inspired by [this](https://github.com/rsoesemann/apex-unified-logging).
