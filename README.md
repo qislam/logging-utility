@@ -53,6 +53,24 @@ QDX_Log.debug('Viewing {0} account with {1} contacts', new List<Object>{acc.Name
   - First parameter can be a string, an object or list of objects
   - Optionally you can pass an id as the second parameter. By default, the utility will group events by the event timestamp. If an Id parameter is passed then that is used for grouping.
 
-Enjoy!
+## Sample Implementation of QDX_Log.IError Interface
+
+```java
+public with sharing class CreateError implements QDX_Log.IError {
+    public void create(List<QDX_Log__e> errorEvents) {
+        List<Case> errorCases = new List<Case>();
+
+        for (QDX_Log__e error : errorEvents) {
+            errorCases.add(new Case(
+                Subject = 'Error in ' + className + '.' + methodName,
+                Description = 'Failed at line number ' + lineNumber + '\n' + message
+            ));
+        }
+        insert errorCases;
+    }
+}
+```
 
 This utility is inspired by [this](https://github.com/rsoesemann/apex-unified-logging).
+
+Enjoy!
