@@ -9,7 +9,7 @@ export default class QdxLogMonitor extends LightningElement {
     gridColumns = [
         {
             type: 'text',
-            fieldName: 'QDX_Context__c', //, QDX_User__c, , , , 
+            fieldName: 'QDX_Context__c',
             label: 'Context',
             initialWidth: 150
         },
@@ -48,7 +48,14 @@ export default class QdxLogMonitor extends LightningElement {
     connectedCallback() {       
         // Register error listener       
         this.registerErrorListener(); 
-        this.handleSubscribe();     
+        this.handleSubscribe();
+        // Storing in session to avoid clearing events if moving to a different tab within salesforce app.
+        // Events data will be still be cleared on browser refresh.
+        if (sessionStorage.qdxLogData) this.gridData = [...JSON.parse(sessionStorage.qdxLogData)];
+    }
+
+    disconnectedCallback() {
+        sessionStorage.qdxLogData = JSON.stringify(this.gridData);
     }
 
     // Handles subscribe button click

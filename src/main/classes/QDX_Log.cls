@@ -13,6 +13,9 @@ public with sharing class QDX_Log {
 	private static final String THIS_CONTEXT = timestamp();
     private static List<QDX_Log__e> eventsToPublish;
 
+    @TestVisible
+    private static Boolean setupClassConfig = true;
+
 	// PUBLIC
 	public static void debug(String message) {
 		debug(message, new List<Object>(), null);
@@ -95,7 +98,7 @@ public with sharing class QDX_Log {
     }
 
     public static void publish() {
-        if (eventsToPublish == null) return;
+        if (eventsToPublish == null) eventsToPublish = new List<QDX_Log__e>();
 
         QDX_Log__e[] errorEvents = new List<QDX_Log__e>();
 
@@ -149,6 +152,7 @@ public with sharing class QDX_Log {
         emit(message, new List<Object>(), contextId, LoggingLevel.DEBUG);
     }
 
+    @TestVisible
 	private static void emit(String message, List<Object> values, Id contextId, LoggingLevel level) {
         QDX_LogSetting__mdt classConfig;
 
@@ -175,6 +179,14 @@ public with sharing class QDX_Log {
         ];
         if(!classConfigList.isEmpty()) classConfig = classConfigList[0];
 
+        if (Test.isRunningTest() && setupClassConfig) {
+            classConfig = new QDX_LogSetting__mdt();
+            classConfig.MasterLabel = 'QDX_Log_Test';
+            classConfig.QDX_ErrorClassName__c = 'QDX_Log_Test';
+            classConfig.QDX_LogDate__c = System.today();
+            classConfig.QDX_Aggregate__c = true;
+        }
+
         if(
             classConfig == null ||
             classConfig.QDX_LogDate__c != System.today() ||
@@ -198,6 +210,7 @@ public with sharing class QDX_Log {
         if (!classConfig.QDX_Aggregate__c) EventBus.publish(currentEvent);
 	}
 
+    @TestVisible
     private static void createError(QDX_Log__e[] errorEvents) {
         if (Limits.getDmlStatements() > Limits.getLimitDmlStatements() - 1) return;
         
@@ -207,6 +220,15 @@ public with sharing class QDX_Log {
             WHERE QDX_ErrorClassName__c != null
             LIMIT 1
         ];
+
+        if (Test.isRunningTest()) {
+            errorClassSettings = new List<QDX_LogSetting__mdt>();
+            QDX_LogSetting__mdt setting = new QDX_LogSetting__mdt();
+            setting.MasterLabel = 'TestSettingForError';
+            setting.QDX_ErrorClassName__c = 'QDX_Log_Test';
+            errorClassSettings.add(setting);
+        }
+
         if (errorClassSettings.isEmpty()) return;
 
         String errorClassName = errorClassSettings[0].QDX_ErrorClassName__c;
