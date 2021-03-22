@@ -189,7 +189,7 @@ public with sharing class QDX_Log {
 
         if(
             classConfig == null ||
-            classConfig.QDX_LogDate__c != System.today() ||
+            classConfig.QDX_LogDate__c < System.today() ||
             (classConfig.QDX_Method__c != null && classConfig.QDX_Method__c != currentEvent.QDX_Method__c) ||
             Limits.getPublishImmediateDML() > Limits.getLimitPublishImmediateDML() - 1
         ) {

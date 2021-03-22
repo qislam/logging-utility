@@ -1,13 +1,23 @@
 <template>
     <lightning-card >
         <div class="container">
-            <template if:true={displayFilterOptions}>
+            <template if:true={displayUserFilter}>
                 <lightning-combobox 
                     name="UserNameFilter"
                     label="Filter By User"
-                    options={filterOptions}
+                    options={userNameFilter}
                     value={selectedUser}
-                    onchange={handleFilterChange}>
+                    onchange={handleUserFilterChange}>
+                </lightning-combobox>
+                <br/>
+            </template>
+            <template if:true={displayClassFilter}>
+                <lightning-combobox 
+                    name="ClassNameFilter"
+                    label="Filter By Class"
+                    options={classNameFilter}
+                    value={selectedClass}
+                    onchange={handleClassFilterChange}>
                 </lightning-combobox>
                 <br/>
             </template>
