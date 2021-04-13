@@ -106,8 +106,7 @@ public with sharing class QDX_Log {
             if (event.QDX_Level__c == LoggingLevel.ERROR.name()) errorEvents.add(event);
         }
 
-        limits();
-        EventBus.publish(eventsToPublish);
+        if (!eventsToPublish.isEmpty()) EventBus.publish(eventsToPublish);
         eventsToPublish.clear();
 
         if (!errorEvents.isEmpty()) createError(errorEvents);
@@ -171,11 +170,14 @@ public with sharing class QDX_Log {
         // MasterLabel must be same as the class name.
         List<QDX_LogSetting__mdt> classConfigList = [
             SELECT MasterLabel
+            , DeveloperName
             , QDX_LogDate__c
             , QDX_Aggregate__c
             , QDX_Method__c
             FROM QDX_LogSetting__mdt
-            WHERE MasterLabel = :currentEvent.QDX_Class__c
+            WHERE DeveloperName = :currentEvent.QDX_Class__c
+            AND MasterLabel = :currentEvent.QDX_Class__c
+            AND QDX_LogDate__c != null
         ];
         if(!classConfigList.isEmpty()) classConfig = classConfigList[0];
 
@@ -187,7 +189,7 @@ public with sharing class QDX_Log {
             classConfig.QDX_Aggregate__c = true;
         }
 
-        if(
+        if (
             classConfig == null ||
             classConfig.QDX_LogDate__c < System.today() ||
             (classConfig.QDX_Method__c != null && classConfig.QDX_Method__c != currentEvent.QDX_Method__c) ||
@@ -201,13 +203,19 @@ public with sharing class QDX_Log {
                 currentEvent.QDX_Message__c
             };
             System.debug(String.format(debugFormat, messageParams));
+            if (currentEvent.QDX_Level__c == LoggingLevel.ERROR.name()) {
+                createError(new List<QDX_Log__e>{currentEvent});
+            }
             return;
         }
+        if (!classConfig.QDX_Aggregate__c) {
+            EventBus.publish(currentEvent);
+            return;
+        } 
         
-        if (eventsToPublish == null) eventsToPublish = new List<QDX_Log__e>{currentEvent};
-        else eventsToPublish.add(currentEvent);
-
-        if (!classConfig.QDX_Aggregate__c) EventBus.publish(currentEvent);
+        if (eventsToPublish == null) eventsToPublish = new List<QDX_Log__e>();
+        
+        eventsToPublish.add(currentEvent);
 	}
 
     @TestVisible

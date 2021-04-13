@@ -1,0 +1,13 @@
+Version: "49.0"
+ApexClass:
+  - QDX_Log
+  - QDX_Log_Test
+CustomObject:
+  - QDX_LogSetting__mdt
+  - QDX_Log__e
+CustomApplication:
+  - QDX_Log_Viewer
+LightningComponentBundle:
+  - qdxLogMonitor
+Layout:
+  - QDX_LogSetting__mdt-Log Setting Layout

@@ -3,12 +3,7 @@ import { subscribe, unsubscribe, onError, setDebugFlag, isEmpEnabled } from 'lig
 
 export default class QdxLogMonitor extends LightningElement {
     filterOptions = [{label: 'All', value: 'All'}];
-    @track userNameFilter = [{label: 'All', value: 'All'}];
-    @track classNameFilter = [{label: 'All', value: 'All'}];
     selectedUser = 'All';
-    selectedClass = 'All';
-    displayUserFilter = false;
-    displayClassFilter = false;
     displayFilterOptions = false;
     gridData = [];
     gridColumns = [
@@ -96,17 +91,11 @@ export default class QdxLogMonitor extends LightningElement {
     }
 
     updateFilterOptions(log) {
-        if (this.userNameFilter.find(option => option.value == log.QDX_User__c) === undefined) {
-            this.userNameFilter.push({label: log.QDX_UserName__c, value: log.QDX_User__c});
+        if (this.filterOptions.find(option => option.value == log.QDX_User__c) === undefined) {
+            this.filterOptions.push({label: log.QDX_UserName__c, value: log.QDX_User__c});
         }
-        if (this.classNameFilter.find(option => option.value == log.QDX_User__c) === undefined) {
-            this.classNameFilter.push({label: log.QDX_UserName__c, value: log.QDX_User__c});
-        }
-        
-        this.userNameFilter = [...this.userNameFilter];
-        this.classNameFilter = [...this.classNameFilter];
-        this.displayUserFilter = this.userNameFilter.length > 2;
-        this.displayClassFilter = this.classNameFilter.length > 2;
+        if (this.filterOptions.length > 2 && !this.displayFilterOptions) this.displayFilterOptions = true;
+        this.filterOptions = [...this.filterOptions];
     }
 
     handleFilterChange(event) {
@@ -114,22 +103,6 @@ export default class QdxLogMonitor extends LightningElement {
             if(event.target.value != this.gridData[i].QDX_User__c) this.gridData.splice(i, 1);
         }
         this.selectedUser = event.target.value;
-        this.gridData = [...this.gridData];
-    }
-
-    handleUserFilterChange(event) {
-        for (let i = 0; i < this.gridData.length; i++) {
-            if(event.target.value != this.gridData[i].QDX_User__c) this.gridData.splice(i, 1);
-        }
-        this.selectedUser = event.target.value;
-        this.gridData = [...this.gridData];
-    }
-
-    handleClassFilterChange(event) {
-        for (let i = 0; i < this.gridData.length; i++) {
-            if(event.target.value != this.gridData[i].QDX_Class__c) this.gridData.splice(i, 1);
-        }
-        this.selectedClass = event.target.value;
         this.gridData = [...this.gridData];
     }
 
