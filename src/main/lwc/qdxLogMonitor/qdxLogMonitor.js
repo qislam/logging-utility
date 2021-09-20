@@ -60,7 +60,7 @@ export default class QdxLogMonitor extends LightningElement {
     }
 
     disconnectedCallback() {
-        sessionStorage.qdxLogData = JSON.stringify(this.gridData);
+        //sessionStorage.qdxLogData = JSON.stringify(this.gridData);
     }
 
     // Handles subscribe button click
@@ -68,11 +68,13 @@ export default class QdxLogMonitor extends LightningElement {
         // Callback invoked whenever a new event message is received
         const messageCallback = function(response) {
             const log = response.data.payload;
+            this.storeDataInSession(log);
             this.updateFilterOptions(log);
+
             if (this.selectedUser != 'All' && this.selectedUser != log.QDX_User__c) return;
+            if (this.selectedClass != 'All' && this.selectedClass != log.QDX_Class__c) return;
 
             const context = log.QDX_Context__c;
-
             let foundParent = false;
             for (const record of this.gridData) {
                 if (record.QDX_Context__c === context) {
@@ -99,8 +101,8 @@ export default class QdxLogMonitor extends LightningElement {
         if (this.userNameFilter.find(option => option.value == log.QDX_User__c) === undefined) {
             this.userNameFilter.push({label: log.QDX_UserName__c, value: log.QDX_User__c});
         }
-        if (this.classNameFilter.find(option => option.value == log.QDX_User__c) === undefined) {
-            this.classNameFilter.push({label: log.QDX_UserName__c, value: log.QDX_User__c});
+        if (this.classNameFilter.find(option => option.value == log.QDX_Class__c) === undefined) {
+            this.classNameFilter.push({label: log.QDX_Class__c, value: log.QDX_Class__c});
         }
         
         this.userNameFilter = [...this.userNameFilter];
@@ -109,29 +111,77 @@ export default class QdxLogMonitor extends LightningElement {
         this.displayClassFilter = this.classNameFilter.length > 2;
     }
 
-    handleFilterChange(event) {
-        for (let i = 0; i < this.gridData.length; i++) {
-            if(event.target.value != this.gridData[i].QDX_User__c) this.gridData.splice(i, 1);
+    storeDataInSession(log) {
+        let tempData = [];
+        if (sessionStorage.qdxLogData) tempData = [...JSON.parse(sessionStorage.qdxLogData)];
+
+        let context = log.QDX_Context__c;
+        let foundParent = false;
+        for (const record of tempData) {
+            if (record.QDX_Context__c === context) {
+                record._children.push(log);
+                foundParent = true;
+                break;
+            }
         }
-        this.selectedUser = event.target.value;
-        this.gridData = [...this.gridData];
+        if (!foundParent) {
+            tempData.push({QDX_Context__c: context, _children: [log]});
+        }
+        sessionStorage.qdxLogData = JSON.stringify(tempData);
+    }
+
+    handleFilterChange(event) {
+        let tempData = [];
+        for (const contextGroup of [...JSON.parse(sessionStorage.qdxLogData)]) {
+            for (const log of contextGroup._children) {
+                if ( 
+                    (this.selectedUser == 'All' && this.selectedClass == 'All')
+                    || (this.selectedClass == 'All' && this.selectedUser != 'All' 
+                        && this.selectedUser == log.QDX_User__c) 
+                    || (this.selectedUser == 'All' && this.selectedClass != 'All' 
+                        && this.selectedClass == log.QDX_Class__c)
+                    || (this.selectedClass != 'All' && this.selectedUser != 'All' 
+                        && this.selectedUser == log.QDX_User__c 
+                        && this.selectedClass == log.QDX_Class__c)
+                ) {
+                    let context = log.QDX_Context__c;
+                    let foundParent = false;
+                    for (const record of tempData) {
+                        if (record.QDX_Context__c === context) {
+                            record._children.push(log);
+                            foundParent = true;
+                            break;
+                        }
+                    }
+                    if (!foundParent) {
+                        tempData.push({QDX_Context__c: context, _children: [log]});
+                    }
+                }
+            }
+        }
+
+        this.gridData = [...tempData];
     }
 
     handleUserFilterChange(event) {
-        for (let i = 0; i < this.gridData.length; i++) {
-            if(event.target.value != this.gridData[i].QDX_User__c) this.gridData.splice(i, 1);
-        }
         this.selectedUser = event.target.value;
-        this.gridData = [...this.gridData];
+        this.handleFilterChange();
     }
 
     handleClassFilterChange(event) {
-        for (let i = 0; i < this.gridData.length; i++) {
-            if(event.target.value != this.gridData[i].QDX_Class__c) this.gridData.splice(i, 1);
-        }
         this.selectedClass = event.target.value;
-        this.gridData = [...this.gridData];
+        this.handleFilterChange();
     }
+
+    handleDownload(event){
+        let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.gridData));
+        let downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href",     dataStr);
+        downloadAnchorNode.setAttribute("download", "QDX_Logs_" + Date.now() + ".json");
+        document.body.appendChild(downloadAnchorNode); // required for firefox
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+      }
 
     registerErrorListener() {
         // Invoke onError empApi method

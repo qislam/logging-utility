@@ -1,13 +1,13 @@
 /*
 * QDX_Log
 * @author Qamar Islam (https://github.com/qislam)
-* @description This class is for replacing need to place System.debug statements.
+* @description This class is for replacing need to place QDX_Log.debug statements.
 * To create persistent error log records implement the QDX_Log.IError interface and create a 
 * metadata type record with the name of that class.
 * @credit This is inspired by https://github.com/rsoesemann/apex-unified-logging
 */
 public with sharing class QDX_Log {
-	private static final String ORG_NAMESPACE = [SELECT NamespacePrefix FROM Organization].NamespacePrefix;
+	private static final String ORG_NAMESPACE = null; //[SELECT NamespacePrefix FROM Organization].NamespacePrefix;
     private static final String CLASSNAME = QDX_Log.class.getName();
 	private static final Pattern STACK_LINE = Pattern.compile('^(?:Class\\.)?([^.]+)\\.?([^\\.\\:]+)?[\\.\\:]?([^\\.\\:]*): line (\\d+), column (\\d+)$');
 	private static final String THIS_CONTEXT = timestamp();
@@ -68,6 +68,14 @@ public with sharing class QDX_Log {
 	public static void error(Id contextId) {
 		error('', new List<Object>(), contextId);
 	}
+
+    public static void error(Exception ex) {
+        error(
+            '{1}:{0}\n{2}',
+            new List<Object>{ex.getMessage(), ex.getTypeName(), ex.getStackTraceString()},
+            null
+        );
+    }
 
     public static void error(Object obj) {
         error('' + obj, new List<Object>(), null);
@@ -248,7 +256,7 @@ public with sharing class QDX_Log {
             IError errorClass = (IError)t.newInstance(); 
             errorClass.create(errorEvents);
         } catch(Exception e) {
-            System.debug(e.getMessage());
+            QDX_Log.debug(e.getMessage());
         }
     }
 

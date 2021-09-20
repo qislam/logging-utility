@@ -1,16 +1,33 @@
 <template>
+    <lightning-card>
+        <div class="container">
+            <table style="width: 100%;">
+                <tr>
+                    <td style="width: 50%; padding: 10px;">
+                        <lightning-combobox 
+                            name="userNameFilter"
+                            label="Filter By User"
+                            options={userNameFilter}
+                            value={selectedUser}
+                            onchange={handleUserFilterChange}>
+                        </lightning-combobox>
+                    </td>
+                    <td style="width: 50%; padding: 10px;">
+                        <lightning-combobox 
+                            name="classNameFilter"
+                            label="Filter By Class"
+                            options={classNameFilter}
+                            value={selectedClass}
+                            onchange={handleClassFilterChange}>
+                        </lightning-combobox>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </lightning-card>
+    <br/>
     <lightning-card >
         <div class="container">
-            <template if:true={displayFilterOptions}>
-                <lightning-combobox 
-                    name="UserNameFilter"
-                    label="Filter By User"
-                    options={filterOptions}
-                    value={selectedUser}
-                    onchange={handleFilterChange}>
-                </lightning-combobox>
-                <br/>
-            </template>
             <template if:true={gridData.length}>
                 <lightning-tree-grid
                     columns={gridColumns}
@@ -18,6 +35,14 @@
                     key-field="QDX_Context__c"
                     hide-checkbox-column="true">
                 </lightning-tree-grid>
+                <br/>
+                <lightning-button 
+                    variant="brand" 
+                    label="Download Logs" 
+                    title="Download Logs" 
+                    onclick={handleDownload} 
+                    class="slds-m-left_x-small">
+                </lightning-button>
             </template>
             <template if:false={gridData.length}>
                 <p>Waiting for log events...</p>

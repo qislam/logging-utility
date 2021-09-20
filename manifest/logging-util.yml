@@ -1,4 +1,4 @@
-Version: "49.0"
+Version: "52.0"
 ApexClass:
   - QDX_Log
   - QDX_Log_Test
@@ -9,5 +9,6 @@ CustomApplication:
   - QDX_Log_Viewer
 LightningComponentBundle:
   - qdxLogMonitor
+  - qdxLogViewer
 Layout:
   - QDX_LogSetting__mdt-Log Setting Layout

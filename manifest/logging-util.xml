@@ -16,11 +16,12 @@
     </types>
     <types>
         <members>qdxLogMonitor</members>
+        <members>qdxLogViewer</members>
         <name>LightningComponentBundle</name>
     </types>
     <types>
         <members>QDX_LogSetting__mdt-Log Setting Layout</members>
         <name>Layout</name>
     </types>
-    <version>49.0</version>
+    <version>52.0</version>
 </Package>

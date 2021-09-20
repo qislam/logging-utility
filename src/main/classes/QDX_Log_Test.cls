@@ -121,6 +121,16 @@ public with sharing class QDX_Log_Test implements QDX_Log.IError {
     }
 
     @isTest
+    private static void errorExceptionTest() {
+        try {
+            Integer i = 2 / 0;
+        } catch(Exception ex) {
+            QDX_Log.error(ex);
+            System.assertNotEquals(null, QDX_Log.currentEvent.QDX_Message__c);
+        }
+    }
+
+    @isTest
     private static void limitsTest() {
         Id contextId = 'a2R1T0000034dUTUAY';
 

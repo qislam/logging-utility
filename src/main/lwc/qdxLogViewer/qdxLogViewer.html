@@ -1,0 +1,21 @@
+<template>
+    <lightning-card>
+        <div class="container">
+            <lightning-textarea 
+                name="raw-log" 
+                label="Raw Log JSON" 
+                placeholder="Paste your log json here..."
+                onchange={handleLogText}>
+            </lightning-textarea>
+            <br/>
+            <template if:true={gridData.length}>
+                <lightning-tree-grid
+                    columns={gridColumns}
+                    data={gridData}
+                    key-field="QDX_Context__c"
+                    hide-checkbox-column="true">
+                </lightning-tree-grid>
+            </template>
+        </div>
+    </lightning-card>
+</template>
