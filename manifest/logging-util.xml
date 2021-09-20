@@ -11,13 +11,21 @@
         <name>CustomObject</name>
     </types>
     <types>
-        <members>QDX_Log_Viewer</members>
+        <members>QDX_Logs</members>
         <name>CustomApplication</name>
+    </types>
+    <types>
+        <members>Logs</members>
+        <name>CustomTab</name>
     </types>
     <types>
         <members>qdxLogMonitor</members>
         <members>qdxLogViewer</members>
         <name>LightningComponentBundle</name>
+    </types>
+    <types>
+        <members>Logs</members>
+        <name>FlexiPage</name>
     </types>
     <types>
         <members>QDX_LogSetting__mdt-Log Setting Layout</members>

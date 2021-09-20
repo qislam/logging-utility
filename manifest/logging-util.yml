@@ -6,9 +6,13 @@ CustomObject:
   - QDX_LogSetting__mdt
   - QDX_Log__e
 CustomApplication:
-  - QDX_Log_Viewer
+  - QDX_Logs
+CustomTab:
+  - Logs
 LightningComponentBundle:
   - qdxLogMonitor
   - qdxLogViewer
+FlexiPage:
+  - Logs
 Layout:
   - QDX_LogSetting__mdt-Log Setting Layout
