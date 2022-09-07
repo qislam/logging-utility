@@ -18,82 +18,74 @@ public with sharing class QDX_Log {
 
 	// PUBLIC
 	public static void debug(String message) {
-		debug(message, new List<Object>(), null);
+		debug(message, new List<Object>(), getContextId());
 	}
 
 	public static void debug(String message, List<Object> values) {
-		debug(message, values, null);
+		debug(message, values, getContextId());
 	}
 
-	public static void debug(String message, Id contextId) {
+	public static void debug(String message, String contextId) {
 		debug(message, new List<Object>(), contextId);
 	}
 
-	public static void debug(Id contextId) {
-		debug('', new List<Object>(), contextId);
-	}
-
     public static void debug(Object obj) {
-        debug('' + obj, new List<Object>(), null);
+        debug('' + obj, new List<Object>(), getContextId());
     }
 
-    public static void debug(Object obj, Id contextId) {
+    public static void debug(Object obj, String contextId) {
         debug('' + obj, new List<Object>(), contextId);
     }
 
     public static void debug(Object[] objList) {
-        debug('' + objList, new List<Object>(), null);
+        debug('' + objList, new List<Object>(), getContextId());
     }
 
-    public static void debug(Object[] objList, Id contextId) {
+    public static void debug(Object[] objList, String contextId) {
         debug('' + objList, new List<Object>(), contextId);
     }
 
-	public static void debug(String message, List<Object> values, Id contextId) {
+	public static void debug(String message, List<Object> values, String contextId) {
 		emit(message, values, contextId, LoggingLevel.DEBUG);
 	}
 
 	public static void error(String message) {
-		error(message, new List<Object>(), null);
+		error(message, new List<Object>(), getContextId());
 	}
 
 	public static void error(String message, List<Object> values) {
-		error(message, values, null);
+		error(message, values, getContextId());
 	}
 
-	public static void error(String message, Id contextId) {
+	public static void error(String message, String contextId) {
 		error(message, new List<Object>(), contextId);
-	}
-
-	public static void error(Id contextId) {
-		error('', new List<Object>(), contextId);
 	}
 
     public static void error(Exception ex) {
         error(
             '{1}:{0}\n{2}',
             new List<Object>{ex.getMessage(), ex.getTypeName(), ex.getStackTraceString()},
-            null
+            getContextId()
         );
     }
 
     public static void error(Object obj) {
-        error('' + obj, new List<Object>(), null);
+        error('' + obj, new List<Object>(), getContextId());
     }
 
-    public static void error(Object obj, Id contextId) {
+    public static void error(Object obj, String contextId) {
         error('' + obj, new List<Object>(), contextId);
     }
 
     public static void error(Object[] objList) {
-        error('' + objList, new List<Object>(), null);
+        error('' + objList, new List<Object>(), getContextId());
     }
 
-    public static void error(Object[] objList, Id contextId) {
+    public static void error(Object[] objList, String contextId) {
         error('' + objList, new List<Object>(), contextId);
     }
 
-	public static void error(String message, List<Object> values, Id contextId) {
+	public static void error(String message, List<Object> values, String contextId) {
 		emit(message, values, contextId, LoggingLevel.ERROR);
 	}
 
@@ -101,23 +93,23 @@ public with sharing class QDX_Log {
         emitLimits(null);
     }
 
-    public static void limits(Id contextId) {
+    public static void limits(String contextId) {
         emitLimits(contextId);
     }
 
     public static void publish() {
-        if (eventsToPublish == null) eventsToPublish = new List<QDX_Log__e>();
+        if (eventsToPublish == null) { eventsToPublish = new List<QDX_Log__e>(); }
 
         QDX_Log__e[] errorEvents = new List<QDX_Log__e>();
 
         for (QDX_Log__e event : eventsToPublish) {
-            if (event.QDX_Level__c == LoggingLevel.ERROR.name()) errorEvents.add(event);
+            if (event.QDX_Level__c == LoggingLevel.ERROR.name()) { errorEvents.add(event); }
         }
 
-        if (!eventsToPublish.isEmpty()) EventBus.publish(eventsToPublish);
+        if (!eventsToPublish.isEmpty()) { EventBus.publish(eventsToPublish); }
         eventsToPublish.clear();
 
-        if (!errorEvents.isEmpty()) createError(errorEvents);
+        if (!errorEvents.isEmpty()) { createError(errorEvents); }
     }
 
     public interface IError {
@@ -125,7 +117,10 @@ public with sharing class QDX_Log {
     }
 
     // PRIVATE
-    private static void emitLimits(Id contextId) {
+    private static String getContextId() {
+        return Request.getCurrent().getRequestId();
+    }
+    private static void emitLimits(String contextId) {
         String message = '';
         message += String.format(
             '{0} SOQL statements out of {1}.\n', 
@@ -160,10 +155,10 @@ public with sharing class QDX_Log {
     }
 
     @TestVisible
-	private static void emit(String message, List<Object> values, Id contextId, LoggingLevel level) {
+	private static void emit(String message, List<Object> values, String contextId, LoggingLevel level) {
         QDX_LogSetting__mdt classConfig;
 
-		if (!values.isEmpty()) message = String.format(message, cast(values));
+		if (!values.isEmpty()) { message = String.format(message, cast(values)); }
         Boolean AGGREGATE_EVENTS = true;
         
         currentEvent = new QDX_Log__e();
@@ -187,7 +182,7 @@ public with sharing class QDX_Log {
             AND MasterLabel = :currentEvent.QDX_Class__c
             AND QDX_LogDate__c != null
         ];
-        if(!classConfigList.isEmpty()) classConfig = classConfigList[0];
+        if(!classConfigList.isEmpty()) { classConfig = classConfigList[0]; }
 
         if (Test.isRunningTest() && setupClassConfig) {
             classConfig = new QDX_LogSetting__mdt();
@@ -203,7 +198,7 @@ public with sharing class QDX_Log {
             (classConfig.QDX_Method__c != null && classConfig.QDX_Method__c != currentEvent.QDX_Method__c) ||
             Limits.getPublishImmediateDML() > Limits.getLimitPublishImmediateDML() - 1
         ) {
-            String debugFormat = 'QDX_LOG_MESSAGE From {0}.{1} at line {2}:\n{3}';
+            String debugFormat = 'QDX_LOG_MESSAGE From {0}.{1}() at line {2}: {3}';
             Object[] messageParams = new Object[]{
                 currentEvent.QDX_Class__c,
                 currentEvent.QDX_Method__c,
@@ -221,14 +216,14 @@ public with sharing class QDX_Log {
             return;
         } 
         
-        if (eventsToPublish == null) eventsToPublish = new List<QDX_Log__e>();
+        if (eventsToPublish == null) { eventsToPublish = new List<QDX_Log__e>(); }
         
         eventsToPublish.add(currentEvent);
 	}
 
     @TestVisible
     private static void createError(QDX_Log__e[] errorEvents) {
-        if (Limits.getDmlStatements() > Limits.getLimitDmlStatements() - 1) return;
+        if (Limits.getDmlStatements() > Limits.getLimitDmlStatements() - 1) { return; }
         
         List<QDX_LogSetting__mdt> errorClassSettings = [
             SELECT QDX_ErrorClassName__c 
@@ -245,12 +240,12 @@ public with sharing class QDX_Log {
             errorClassSettings.add(setting);
         }
 
-        if (errorClassSettings.isEmpty()) return;
+        if (errorClassSettings.isEmpty()) { return; }
 
         String errorClassName = errorClassSettings[0].QDX_ErrorClassName__c;
 
         Type t = Type.forName(errorClassName);
-        if (t == null) return;
+        if (t == null) { return; }
         
         try {
             IError errorClass = (IError)t.newInstance(); 
